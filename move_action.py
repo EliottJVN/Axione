@@ -27,4 +27,6 @@ class Move_Action():
 
 if __name__ == '__main__':
         action = Move_Action(1)
-        
+        action.move((500, 993))
+        action.s_click((378, 993))
+        action.write((300, 900), "TEST")
