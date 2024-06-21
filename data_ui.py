@@ -1,10 +1,20 @@
 #Couleur de fond
-BG = '#ffffff'
-BG_BT = '#808080'
+BG = '#030D2C'
+BG_BT = '#112C80'
 
 # Polices et Couleur.
-FONT = 'Terminal 40 bold'
-FONT_COLOR = '#bd4d0e'
+FONT = 'Terminal 10 bold'
+FONT_COLOR = '#CDCED2'
+
+# Taille des boutons
+W = 200
+H = 40
+
+# Positions des Boutons
+X = 10
+Y = 20
+PADDING = 10 
+OFFSET = PADDING + H
 
 # racourci clavier avec le listner
 QUIT = '\x11'

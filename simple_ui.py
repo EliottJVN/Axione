@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 from data_ui import *
 
@@ -19,47 +20,42 @@ class UI(tk.Tk):
 
         # Gère le FullScreen.
         self.geometry("{}x{}".format(int(scr_l/2), int(scr_h/2)+250))
-        self.full_scr = True
+        self.full_scr = False
         self.attributes("-fullscreen", self.full_scr)
         self.resizable(width=False, height=False)
         self.bind("<F11>", self.toggle_scr)
-
+        
+        self.Button =  []
+        
         titre = tk.Label(self, text="Simple UI\nMenu",
                          font=FONT, bg=BG, fg=FONT_COLOR, justify='center')
-        titre.place(relheight=0.25, relwidth=1)
-
-
+        self.Button.append(titre) 
+        
+        name_action = tk.Label(self, font=FONT, fg=FONT_COLOR, bg = BG, text="macro name :", justify='right')
+        self.Button.append(name_action)
         self.action_name = tk.Entry(self, font=FONT,
                                fg=FONT_COLOR, bg=BG_BT)
-        self.learn_butt = tk.Button(self, text='learn_action', font=FONT,
+        self.Button.append(self.action_name)
+       
+        learn_butt = tk.Button(self, text='learn_macro', font=FONT,
                                fg=FONT_COLOR, bg=BG_BT, command=self.learn_action)
-        self.save_butt = tk.Button(self, text='save_action', font=FONT,
+        self.Button.append(learn_butt)
+        
+        save_butt = tk.Button(self, text='save_macro', font=FONT,
                                fg=FONT_COLOR, bg=BG_BT, command=self.save_action)
+        self.Button.append(save_butt)
+        
+        play_action = tk.Button(self, text='play_macro', font=FONT,
+                               fg=FONT_COLOR, bg=BG_BT, command=self.play_action)
+        self.Button.append(play_action)
+        
+        for i in range(len(self.Button)):
+            self.Button[i].place(x=X, y=Y+i*OFFSET, height = H, width= W)
+        
         
         self.select_action = tk.Listbox()
-        self.play_action = tk.Button()
-
-        
-        
-        self.action_name.pack()
-        self.learn_butt.pack()
-        self.save_butt.pack()
-
-        self.select_action.pack()
-        self.play_action.pack()
-        #ard_ri = tk.Button(self, text='Ard-Ri', font=pol_t,
-        #                   fg=col, bg="#fcc461", command=self.V1)
-        #ard_ri.place(anchor="n", height=size_w,
-        #            width=size_h, relx=0.5, rely=0.28)
-
-        # hnefatafl = tk.Label(self, text="Hnefatafl:",
-        #                      font=pol_t, bg="#d38008", fg=col, justify='center')
-        # #hnefatafl_v1.place(anchor="ne", height=size_w,
-        #                    width=size_h/2 - 5, relx=0.5, rely=0.84, x=-5)
-
-        size_w = 60
-        size_h = 350
-
+        self.load_files()
+        self.select_action.place(x=X + 10 + W, y = Y + 2*OFFSET, height = 4*H+3*PADDING, width= W)
 
     def toggle_scr(self, event):
         """FullScreen bind avec <F11>"""
@@ -100,8 +96,6 @@ class UI(tk.Tk):
                 self.mouse_listener.start()
 
             elif key.char == SAVE:
-                self.mouse_listener.stop()
-                self.key_listener.stop()
                 self.save_action()
             
             else:
@@ -110,19 +104,47 @@ class UI(tk.Tk):
             pass
 
     def save_action(self):
+        self.mouse_listener.stop()
+        self.key_listener.stop()
+
         if self.action_name.get() == '':
             print("Please enter a name for your action.")
             return
-       
+
+        if self.move_n_click == []:
+            print('Your macro is empty.')
+            return
+        
         try:
             with open('save/'+self.action_name.get()+'.txt', 'w') as fichier:
                 for element in self.move_n_click:
                     fichier.write(f"{element}\n")
             print(f"La liste a été sauvegardée avec succès dans le fichier.")
+            self.move_n_click = []
+            self.load_files()
         except Exception as e:
             print(f"Une erreur s'est produite lors de la sauvegarde de la liste : {e}")
 
-        
+    def load_files(self):
+        self.select_action.delete(0, tk.END)
+        files = self.find_files('save/')
+        for file in files:
+            self.select_action.insert(tk.END, file)
+
+    def play_action(self):
+        if self.select_action.get() == '':
+            print("Please select an action you want to play.")
+            return
+    
+    def find_files(self, folder):
+        files = []
+        with os.scandir(folder) as entries:
+            for entry in entries:
+                if entry.is_file():
+                    a = entry.name[:-4]
+                    files.append(a)
+        return files
+
 if __name__ == '__main__':
     simple_UI = UI()
     simple_UI.mainloop()
