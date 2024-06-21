@@ -1,8 +1,11 @@
 import os
 import tkinter as tk
 from data_ui import *
+import json
 
 from pynput import mouse, keyboard
+import pyautogui
+import time
 
 class UI(tk.Tk):
     def __init__(self):
@@ -100,6 +103,7 @@ class UI(tk.Tk):
             
             else:
                 self.move_n_click.append([key])
+                print(self.move_n_click)
         except AttributeError:
             pass
 
@@ -114,14 +118,33 @@ class UI(tk.Tk):
         if self.move_n_click == []:
             print('Your macro is empty.')
             return
+        print(self.move_n_click)
+        for i in range(len(self.move_n_click)):
+            if len(self.move_n_click[i]) == 3:
+                position, bouton, etat = self.move_n_click[i]
+                if bouton == mouse.Button.left:
+                    bouton_str = 'left'
+                elif bouton == mouse.Button.right:         
+                    bouton_str = 'right'
+                elif bouton == mouse.Button.middle:
+                    bouton_str = 'middle'  
+                else:
+                    raise ValueError("Bouton de souris non reconnu")
+                self.move_n_click[i] = [position, bouton_str, etat]
+                print(self.move_n_click[i])
+            else:                
+                if bouton == keyboard.Key.space:
+                    self.move_n_click[i] = 'space'
+                elif bouton == keyboard.Key.enter:
+                    self.move_n_click[i] = 'enter'
+                else:
+                    self.move_n_click[i] = self.move_n_click[i][0]
         
         try:
-            with open('save/'+self.action_name.get()+'.txt', 'w') as fichier:
-                for element in self.move_n_click:
-                    fichier.write(f"{element}\n")
-            print(f"La liste a été sauvegardée avec succès dans le fichier.")
-            self.move_n_click = []
-            self.load_files()
+            with open('save/'+self.action_name.get()+'.json', 'w') as fichier:
+                json.dump(self.move_n_click, fichier, ensure_ascii=False, indent=4)
+                self.move_n_click = []
+                self.load_files()
         except Exception as e:
             print(f"Une erreur s'est produite lors de la sauvegarde de la liste : {e}")
 
@@ -132,16 +155,41 @@ class UI(tk.Tk):
             self.select_action.insert(tk.END, file)
 
     def play_action(self):
-        if self.select_action.get() == '':
+        if self.select_action.get(self.select_action.curselection()) == '':
             print("Please select an action you want to play.")
             return
-    
+        file = 'save/' + self.select_action.get(self.select_action.curselection()) + '.json'
+        with open(file,'r') as op_file:
+            commandes = json.load(op_file)
+            print (commandes)
+        for line in commandes:
+            print(line)
+            self.executer_commande(line)
+            time.sleep(SLEEP)  # Pause de 0.1 seconde entre chaque commande
+        
+    def executer_commande(self, commande):
+        if isinstance(commande, list) and len(commande) == 1 and isinstance(commande[0], str):
+            # Il s'agit d'une frappe de touche
+            key = commande[0]
+            keyboard.press_and_release(key)
+        elif isinstance(commande, list) and len(commande) == 3:
+            # Il s'agit d'une commande de souris
+            position, bouton, etat = commande
+            x, y = position
+            if etat:
+                pyautogui.mouseDown(x=x, y=y, button=bouton)
+            else:
+                pyautogui.mouseUp(x=x, y=y, button=bouton)
+        else:
+            raise ValueError("Commande non reconnue")
+
+
     def find_files(self, folder):
         files = []
         with os.scandir(folder) as entries:
             for entry in entries:
                 if entry.is_file():
-                    a = entry.name[:-4]
+                    a = entry.name[:-5]
                     files.append(a)
         return files
 

@@ -21,3 +21,6 @@ QUIT = '\x11'
 PAUSE = '\x10'
 UNPAUSE = '\x15'
 SAVE = '\x13'
+
+# Time Sleep between two command
+SLEEP = 0.1
