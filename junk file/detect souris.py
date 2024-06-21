@@ -18,12 +18,12 @@ def on_press(key):
         pass
 
 # Fonction appelée lorsque la souris se déplace
-def on_move(x, y):
+def on_click(x, y):
     global mouse_position
     mouse_position = (x, y)
 
 # Configure le listener pour la souris
-mouse_listener = mouse.Listener(on_move=on_move)
+mouse_listener = mouse.Listener(on_click=on_click)
 mouse_listener.start()
 
 # Configure le listener pour le clavier
