@@ -7,7 +7,6 @@ from pynput import mouse, keyboard
 import pyautogui
 import time
 
-from PIL import Image, ImageTk
 
 class UI(tk.Tk):
     def __init__(self):
