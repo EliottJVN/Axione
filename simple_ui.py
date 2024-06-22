@@ -15,7 +15,7 @@ class UI(tk.Tk):
         self.title("Simple UI")
 
         # Icône d'application.
-        self.iconbitmap('image/icon.ico')
+        #self.iconbitmap('image/icon.ico')
 
         # Taille de l'écran.
         scr_l = self.winfo_screenwidth()
@@ -149,7 +149,7 @@ class UI(tk.Tk):
         if self.select_action.get(self.select_action.curselection()) == '':
             print("Please select an action you want to play.")
             return
-        file = os.getenv('APPDATA')+'simple_ui/save/' + self.select_action.get(self.select_action.curselection()) + '.json'
+        file = PATH + self.select_action.get(self.select_action.curselection()) + '.json'
         with open(file,'r') as op_file:
             commandes = json.load(op_file)
             print (commandes)
