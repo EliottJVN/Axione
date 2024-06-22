@@ -22,11 +22,12 @@ class UI(tk.Tk):
         scr_h = self.winfo_screenheight()
 
         # Gère le FullScreen.
-        self.geometry("{}x{}".format(int(scr_l/2), int(scr_h/2)+250))
-        self.full_scr = False
-        self.attributes("-fullscreen", self.full_scr)
-        self.resizable(width=False, height=False)
-        self.bind("<F11>", self.toggle_scr)
+        self.geometry("{}x{}".format(2*W +3*PADDING , H+6*OFFSET))
+        
+        # self.full_scr = False
+        # self.attributes("-fullscreen", self.full_scr)
+        # self.resizable(width=False, height=False)
+        # self.bind("<F11>", self.toggle_scr)
         
         self.Button =  []
         
@@ -60,13 +61,13 @@ class UI(tk.Tk):
         self.load_files()
         self.select_action.place(x=X + 10 + W, y = Y + 2*OFFSET, height = 4*H+3*PADDING, width= W)
 
-    def toggle_scr(self, event):
-        """FullScreen bind avec <F11>"""
-        if self.full_scr:
-            self.full_scr = False
-        else:
-            self.full_scr = True
-        self.attributes("-fullscreen", self.full_scr)
+    # def toggle_scr(self, event):
+    #     """FullScreen bind avec <F11>"""
+    #     if self.full_scr:
+    #         self.full_scr = False
+    #     else:
+    #         self.full_scr = True
+    #     self.attributes("-fullscreen", self.full_scr)
 
     def learn_action(self):
         if self.action_name.get() == '':
@@ -74,18 +75,28 @@ class UI(tk.Tk):
             return
         
         self.move_n_click = []
+
         # Configure le listener pour la souris
         self.mouse_listener = mouse.Listener(on_click=self.on_click)
         self.key_listener = keyboard.Listener(on_press=self.on_press)
         self.mouse_listener.start()
         self.key_listener.start()
 
+
     def on_click(self, x, y, button, pressed):
-        self.move_n_click.append([(x,y),button,pressed])
-        print([(x,y),button,pressed])
+        if button== mouse.Button.left:
+            bouton_str = 'left'
+        elif button == mouse.Button.right:         
+            bouton_str = 'right'
+        elif button == mouse.Button.middle:
+            bouton_str = 'middle'  
+        else:
+            raise ValueError("Bouton de souris non reconnu")
+        self.move_n_click.append([[x,y], bouton_str, pressed])
+
 
     def on_press(self,key):
-        print(key)
+        # Permet de quitter les listeners
         try:
             if key.char == QUIT: 
                 self.mouse_listener.stop()
@@ -100,12 +111,17 @@ class UI(tk.Tk):
 
             elif key.char == SAVE:
                 self.save_action()
-            
-            else:
-                self.move_n_click.append([key])
-                print(self.move_n_click)
+        
         except AttributeError:
             pass
+        
+        try:
+            self.move_n_click.append([key.char])
+        except:
+            self.move_n_click.append([self.give_char(key)])
+        
+        
+        
 
     def save_action(self):
         self.mouse_listener.stop()
@@ -118,30 +134,10 @@ class UI(tk.Tk):
         if self.move_n_click == []:
             print('Your macro is empty.')
             return
-        print(self.move_n_click)
-        for i in range(len(self.move_n_click)):
-            if len(self.move_n_click[i]) == 3:
-                position, bouton, etat = self.move_n_click[i]
-                if bouton == mouse.Button.left:
-                    bouton_str = 'left'
-                elif bouton == mouse.Button.right:         
-                    bouton_str = 'right'
-                elif bouton == mouse.Button.middle:
-                    bouton_str = 'middle'  
-                else:
-                    raise ValueError("Bouton de souris non reconnu")
-                self.move_n_click[i] = [position, bouton_str, etat]
-                print(self.move_n_click[i])
-            else:                
-                if bouton == keyboard.Key.space:
-                    self.move_n_click[i] = 'space'
-                elif bouton == keyboard.Key.enter:
-                    self.move_n_click[i] = 'enter'
-                else:
-                    self.move_n_click[i] = self.move_n_click[i][0]
         
+        print(self.move_n_click)
         try:
-            with open('save/'+self.action_name.get()+'.json', 'w') as fichier:
+            with open('save/'+self.action_name.get()+'.json', 'w',encoding='UTF-8') as fichier:
                 json.dump(self.move_n_click, fichier, ensure_ascii=False, indent=4)
                 self.move_n_click = []
                 self.load_files()
@@ -170,8 +166,13 @@ class UI(tk.Tk):
     def executer_commande(self, commande):
         if isinstance(commande, list) and len(commande) == 1 and isinstance(commande[0], str):
             # Il s'agit d'une frappe de touche
-            key = commande[0]
-            keyboard.press_and_release(key)
+            line = commande[0]
+            if len(line) != 1:
+                pyautogui.press(line)
+                return
+            keyboard.Controller().press(line)
+            keyboard.Controller().release(line)
+        
         elif isinstance(commande, list) and len(commande) == 3:
             # Il s'agit d'une commande de souris
             position, bouton, etat = commande
@@ -183,7 +184,6 @@ class UI(tk.Tk):
         else:
             raise ValueError("Commande non reconnue")
 
-
     def find_files(self, folder):
         files = []
         with os.scandir(folder) as entries:
@@ -192,6 +192,65 @@ class UI(tk.Tk):
                     a = entry.name[:-5]
                     files.append(a)
         return files
+
+
+    def give_char(self,key):
+        if key == keyboard.Key.space:
+            key = 'space'
+        elif key == keyboard.Key.enter:
+            key = 'enter'
+        elif key == keyboard.Key.backspace:
+            key = "backspace"
+        elif key == keyboard.Key.up:
+            key = 'up'
+        elif key == keyboard.Key.down:
+            key = 'down'
+        elif key == keyboard.Key.right:
+            key = 'right'
+        elif key == keyboard.Key.left:
+            key = 'left'
+        elif key == keyboard.Key.shift:
+            key = 'shift'
+        elif key == keyboard.Key.shift_r:
+            key = 'shift_r'
+        elif key == keyboard.Key.shift_l:
+            key = 'shift_l'
+        elif key == keyboard.Key.ctrl:
+            key = 'ctrl'
+        elif key == keyboard.Key.ctrl_r:
+            key = 'ctrl_r'
+        elif key == keyboard.Key.ctrl_l:
+            key = 'ctrl_l'
+        elif key == keyboard.Key.f1:
+            key = 'f1'
+        elif key == keyboard.Key.f2:
+            key = 'f2'
+        elif key == keyboard.Key.f3:
+            key = 'f3'
+        elif key == keyboard.Key.f4:
+            key = 'f4'
+        elif key == keyboard.Key.f5:
+            key = 'f5'
+        elif key == keyboard.Key.f6:
+            key = 'f6'
+        elif key == keyboard.Key.f7:
+            key = 'f7'
+        elif key == keyboard.Key.f8:
+            key = 'f8'
+        elif key == keyboard.Key.f9:
+            key = 'f9'
+        elif key == keyboard.Key.f10:
+            key = 'f10'
+        elif key == keyboard.Key.alt:
+            key = 'alt'
+        elif key == keyboard.Key.alt_gr:
+            key = 'alt_gr'
+        elif key == keyboard.Key.alt_l:
+            key = 'alt_l'   
+        elif key == keyboard.Key.alt_r:
+            key = 'alt_r'
+        return key
+
 
 if __name__ == '__main__':
     simple_UI = UI()
