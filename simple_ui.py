@@ -7,6 +7,8 @@ from pynput import mouse, keyboard
 import pyautogui
 import time
 
+from PIL import Image, ImageTk
+
 class UI(tk.Tk):
     def __init__(self):
         # Création de la fenêtre.
@@ -15,7 +17,7 @@ class UI(tk.Tk):
         self.title("Simple UI")
 
         # Icône d'application.
-        # self.iconbitmap('image/icone.ico')
+        self.iconbitmap('image/icon.ico')
 
         # Taille de l'écran.
         scr_l = self.winfo_screenwidth()
@@ -56,19 +58,13 @@ class UI(tk.Tk):
         for i in range(len(self.Button)):
             self.Button[i].place(x=X, y=Y+i*OFFSET, height = H, width= W)
         
-        
+        label_select = tk.Label(self, font=FONT, fg=FONT_COLOR, bg = BG, text="macros saved", justify='right')
         self.select_action = tk.Listbox()
         self.load_files()
-        self.select_action.place(x=X + 10 + W, y = Y + 2*OFFSET, height = 4*H+3*PADDING, width= W)
-
-    # def toggle_scr(self, event):
-    #     """FullScreen bind avec <F11>"""
-    #     if self.full_scr:
-    #         self.full_scr = False
-    #     else:
-    #         self.full_scr = True
-    #     self.attributes("-fullscreen", self.full_scr)
-
+        self.select_action.place(x=X + PADDING + W, y = Y + 2*OFFSET, height = 4*H+3*PADDING, width= W)
+        label_select.place(x=X + PADDING + W, y=Y+OFFSET, height = H, width= W)
+     
+  
     def learn_action(self):
         if self.action_name.get() == '':
             print("Please enter a name for your action.")
