@@ -1,4 +1,3 @@
-import os
 import tkinter as tk
 from data_ui import *
 import json
@@ -24,11 +23,6 @@ class UI(tk.Tk):
 
         # Gère le FullScreen.
         self.geometry("{}x{}".format(2*W +3*PADDING , H+6*OFFSET))
-        
-        # self.full_scr = False
-        # self.attributes("-fullscreen", self.full_scr)
-        # self.resizable(width=False, height=False)
-        # self.bind("<F11>", self.toggle_scr)
         
         self.Button =  []
         
@@ -132,7 +126,7 @@ class UI(tk.Tk):
         
         print(self.move_n_click)
         try:
-            with open('save/'+self.action_name.get()+'.json', 'w',encoding='UTF-8') as fichier:
+            with open(PATH + self.action_name.get()+'.json', 'w',encoding='UTF-8') as fichier:
                 json.dump(self.move_n_click, fichier, ensure_ascii=False, indent=4)
                 self.move_n_click = []
                 self.load_files()
@@ -140,8 +134,14 @@ class UI(tk.Tk):
             print(f"Une erreur s'est produite lors de la sauvegarde de la liste : {e}")
 
     def load_files(self):
+        try:
+            # Créer le dossier s'il n'existe pas déjà
+            os.makedirs(PATH, exist_ok=True)
+        except Exception as e:
+            pass
+        
         self.select_action.delete(0, tk.END)
-        files = self.find_files('save/')
+        files = self.find_files(PATH)
         for file in files:
             self.select_action.insert(tk.END, file)
 
@@ -149,7 +149,7 @@ class UI(tk.Tk):
         if self.select_action.get(self.select_action.curselection()) == '':
             print("Please select an action you want to play.")
             return
-        file = 'save/' + self.select_action.get(self.select_action.curselection()) + '.json'
+        file = os.getenv('APPDATA')+'simple_ui/save/' + self.select_action.get(self.select_action.curselection()) + '.json'
         with open(file,'r') as op_file:
             commandes = json.load(op_file)
             print (commandes)

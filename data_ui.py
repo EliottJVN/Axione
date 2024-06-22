@@ -1,3 +1,5 @@
+import os
+
 #Couleur de fond
 BG = '#030D2C'
 BG_BT = '#112C80'
@@ -24,3 +26,5 @@ SAVE = '\x13'
 
 # Time Sleep between two command
 SLEEP = 0.1
+
+PATH = os.getenv('APPDATA')+'\\simple_ui\\save\\'
