@@ -11,7 +11,7 @@ class UI(tk.Tk):
     def __init__(self):
         # Création de la fenêtre.
         tk.Tk.__init__(self)
-        self.configure(bg=BG)  # f0b45f
+        self.configure(bg=BG) 
         self.title("Simple UI")
 
         # Icône d'application.
@@ -21,7 +21,6 @@ class UI(tk.Tk):
         scr_l = self.winfo_screenwidth()
         scr_h = self.winfo_screenheight()
 
-        # Gère le FullScreen.
         self.geometry("{}x{}".format(2*W +3*PADDING , H+6*OFFSET))
         
         self.Button =  []
@@ -153,12 +152,17 @@ class UI(tk.Tk):
         with open(file,'r') as op_file:
             commandes = json.load(op_file)
             print (commandes)
-        for line in commandes:
-            print(line)
-            self.executer_commande(line)
+        for i in range(len(commandes)):
+            print(commandes[i])
+            if i == 0:
+                p_line = commandes[i]
+            else:
+                p_line = commandes[i-1]
+            line = commandes[i]
+            self.executer_commande(line, p_line)
             time.sleep(SLEEP)  # Pause de 0.1 seconde entre chaque commande
         
-    def executer_commande(self, commande):
+    def executer_commande(self, commande, p_cmd):
         if isinstance(commande, list) and len(commande) == 1 and isinstance(commande[0], str):
             # Il s'agit d'une frappe de touche
             line = commande[0]
@@ -173,9 +177,24 @@ class UI(tk.Tk):
             position, bouton, etat = commande
             x, y = position
             if etat:
+                print("press")
                 pyautogui.mouseDown(x=x, y=y, button=bouton)
+                return
             else:
+                # Vérifie s'il s'agit d'un drag
+                p_position, p_bouton, p_etat = p_cmd
+                p_x, p_y = p_position
+                if x != p_x  or y != p_y :
+                    print("drag")
+                    pyautogui.mouseUp(x=p_x, y=p_y, button=bouton)
+                    
+                    pyautogui.dragTo(x,y,duration = 2, button = bouton, mouseDownUp=True)
+                    pyautogui.mouseUp(x=x, y=y, button=bouton)
+                    return
+                # Sinon on lache juste la touche
+                print("release")
                 pyautogui.mouseUp(x=x, y=y, button=bouton)
+                return
         else:
             raise ValueError("Commande non reconnue")
 

@@ -25,6 +25,6 @@ UNPAUSE = '\x15'
 SAVE = '\x13'
 
 # Time Sleep between two command
-SLEEP = 0.1
+SLEEP = 1
 
 PATH = os.getenv('APPDATA')+'\\simple_ui\\save\\'
